@@ -1,6 +1,6 @@
 #lang forge
 
-//6X6 board
+//4X4 board
 
 /*
   This sig models an abstract square on the
