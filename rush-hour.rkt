@@ -12,6 +12,9 @@ abstract sig Square {
     up: lone Square,
     down: lone Square
 }
+abstract sig Car{}
+one sig Red extends Car{}
+one sig Gray extends Car{}
 
 /*
   Actual instances of squares. There are
@@ -45,6 +48,7 @@ abstract sig Orientation {}
 one sig Vertical extends Orientation {}
 one sig Horizontal extends Orientation {}
 
+
 /*
   This models a state in the gameplay 
 */
@@ -52,7 +56,8 @@ sig State {
    redCarOri: one Orientation,
    redCarLoc: set Square,
    grayCarLoc: set Square,
-   grayCarOri: one Orientation
+   grayCarOri: one Orientation,
+   toMove: one Car
 
 }
 
@@ -70,6 +75,8 @@ state[State] initState {
    
    grayCarLoc = Square12 + Square22 
    grayCarOri = Vertical
+
+   one toMove
  
    
 
@@ -84,6 +91,8 @@ state[State] finalState {
    #(grayCarLoc) = 2
    grayCarOri = Vertical
 
+   one toMove
+
 }
 
 
@@ -92,8 +101,18 @@ transition[State] puzzle {
     grayCarOri' = grayCarOri
     #(redCarLoc') = 2
     #(grayCarLoc') = 2
-    validMove[grayCarLoc,grayCarLoc',grayCarOri]
-    validMove[redCarLoc,redCarLoc',redCarOri]
+
+    toMove = Red implies {
+        validMove[redCarLoc,redCarLoc',redCarOri]
+        grayCarLoc' = grayCarLoc
+    }
+    toMove = Gray implies {
+        validMove[grayCarLoc,grayCarLoc',grayCarOri]
+        redCarLoc' = redCarLoc
+    }
+   
+    //Only issue with this is that now we might have some steps that do nothing
+    toMove' = (Car - toMove)
    
         
     
@@ -242,7 +261,7 @@ pred validMove[startLoc: set Square, endLoc: set Square, ori: one Orientation] {
 
 trace<|State, initState, puzzle, finalState|> traces: linear {}
 
-run<|traces|> gameRules for 10 State
+run<|traces|> gameRules for 5 State
 
 
 
