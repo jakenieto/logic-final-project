@@ -12,8 +12,11 @@ abstract sig Square {
     up: lone Square,
     down: lone Square
 }
+
 abstract sig Car{}
-one sig Red extends Car{}
+one sig Red extends Car{
+   
+}
 one sig Gray extends Car{}
 
 /*
@@ -58,6 +61,7 @@ sig State {
    grayCarLoc: set Square,
    grayCarOri: one Orientation,
    toMove: one Car
+   
 
 }
 
@@ -87,7 +91,6 @@ state[State] finalState {
    redCarLoc = END + Square12
 
    
-   some grayCarLoc
    #(grayCarLoc) = 2
    grayCarOri = Vertical
 
@@ -99,7 +102,7 @@ state[State] finalState {
 transition[State] puzzle {
     redCarOri' = redCarOri
     grayCarOri' = grayCarOri
-    #(redCarLoc') = 2
+    #(redCarLoc') =  #(redCarLoc) 
     #(grayCarLoc') = 2
 
     toMove = Red implies {
@@ -110,12 +113,7 @@ transition[State] puzzle {
         validMove[grayCarLoc,grayCarLoc',grayCarOri]
         redCarLoc' = redCarLoc
     }
-   
-    //Only issue with this is that now we might have some steps that do nothing
-    toMove' = (Car - toMove)
-   
-        
-    
+    one toMove'
 }
 
 
@@ -221,8 +219,6 @@ pred noOverlap {
 pred gameRules{
     noOverlap
     setupBoard
-
-
 }
 
 pred validLoc[loc: set Square,ori: one Orientation] {
@@ -242,13 +238,14 @@ pred validMove[startLoc: set Square, endLoc: set Square, ori: one Orientation] {
     ori = Horizontal implies{
         all s: startLoc {
             //Possible transitive closure like operation to do??
-            all bs: (Square - (s.left + s.right + s + s.left.left + s.right.right + s.left.right + s.right.left)) | bs not in endLoc
+            all bs: (Square - (s.^(left + right))) | bs not in endLoc
+            //all bs: (Square - (s.^(left + right) s.right + s + s.left.left + s.right.right + s.left.right + s.right.left)) | bs not in endLoc
         }
 
     }
     ori = Vertical implies {
         all s: startLoc {
-            all bs: (Square - s.up - s.down - s - s.up.up - s.down.down - s.up.down - s.down.up)| bs not in endLoc
+            all bs: (Square - (s.^(up + down)))| bs not in endLoc
         }
     }
     
@@ -261,7 +258,7 @@ pred validMove[startLoc: set Square, endLoc: set Square, ori: one Orientation] {
 
 trace<|State, initState, puzzle, finalState|> traces: linear {}
 
-run<|traces|> gameRules for 5 State
+run<|traces|> gameRules for 3 State
 
 
 
