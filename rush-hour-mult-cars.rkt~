@@ -13,16 +13,11 @@ abstract sig Square {
     down: lone Square
 }
 
-abstract sig Color {}
-
-one sig Red extends Color {}
-one sig Other extends Color {}
-
-sig Car{
-    color: one Color,
-    ori: one Orientation
+abstract sig Car{}
+one sig Red extends Car{
+   
 }
-
+one sig Gray extends Car{}
 
 /*
   Actual instances of squares. There are
@@ -61,9 +56,11 @@ one sig Horizontal extends Orientation {}
   This models a state in the gameplay 
 */
 sig State {
-    carLoc: set Car->Square,
-    toMove: one Car
-   
+   redCarOri: one Orientation,
+   redCarLoc: set Square,
+   grayCarLoc: set Square,
+   grayCarOri: one Orientation,
+   toMove: one Car
    
 
 }
@@ -75,35 +72,46 @@ sig State {
 */
 
 state[State] initState {
-    validCarSizes[carLoc]
-    hasRedCar[carLoc]
-    some carLoc
-    validLoc[carLoc]
-    one toMove
+  
+   redCarOri = Horizontal
+   redCarLoc = Square10 + Square11
+
+   
+   grayCarLoc = Square12 + Square22 
+   grayCarOri = Vertical
+
+   one toMove
  
+   
 
 }
 
 state[State] finalState {
-    redCarWins[carLoc]
-    one toMove
-    validLoc[carLoc]
+   redCarOri = Horizontal
+   redCarLoc = END + Square12
+
    
+   #(grayCarLoc) = 2
+   grayCarOri = Vertical
+
+   one toMove
 
 }
 
 
 transition[State] puzzle {
-    
-    all car: Car {
-        #(car.carLoc) = #(car.carLoc')
-        car = toMove implies {
-           validMove[carLoc,carLoc',car]
-        }
-        car != toMove implies {
-             car.carLoc' = car.carLoc
-        }
+    redCarOri' = redCarOri
+    grayCarOri' = grayCarOri
+    #(redCarLoc') =  #(redCarLoc) 
+    #(grayCarLoc') = 2
 
+    toMove = Red implies {
+        validMove[redCarLoc,redCarLoc',redCarOri]
+        grayCarLoc' = grayCarLoc
+    }
+    toMove = Gray implies {
+        validMove[grayCarLoc,grayCarLoc',grayCarOri]
+        redCarLoc' = redCarLoc
     }
     one toMove'
 }
@@ -200,108 +208,57 @@ pred setupBoard {
 */
 
 
-pred validCarSizes[carLoc: set Car->Square] {
-    all c: Car | #(c.carLoc) >= 2
-
-}
-
-pred hasRedCar[carLoc: set Car->Squares] {
-  
-    one c: Car {
-        c.color = Red
-        c.ori = Horizontal
-        #(c.carLoc) = 2
-        END not in c.carLoc
-        Square12 not in c.carLoc
-    }
-        
-    
-
-}
-
-pred redCarWins[carLoc: set Car->Square] {
-    all c: Car {
-         c.color = Red implies {
-            c.carLoc = END + Square12
-        }
-    }
-
-
-}
-
+//TODO
 pred noOverlap {
-   all s: State {
-       all c1,c2: Car {
-           c1 != c2 implies {
-               all s1: c1.(s.carLoc) | s1 not in c2.(s.carLoc)
-               all s2: c2.(s.carLoc) | s2 not in c1.(s.carLoc)
-           }
-           
-       }
-   }
+    all s: State {
+        all r: s.redCarLoc | r not in s.grayCarLoc
+        all g: s.grayCarLoc | g not in s.redCarLoc 
+    }
 }
-
-
 
 pred gameRules{
-   #(color.Red) = 1
-   //#(carLoc) > 11
-  // #(Car) = 4
-   //all s: State | one c: Car | #(c.(s.carLoc)) > 3
-   noOverlap
-   setupBoard
-
+    noOverlap
+    setupBoard
 }
 
-pred validLoc[loc: set Car->Square] {
-    all c: Car {
-        all s: c.loc {
-            c.ori = Horizontal implies {
-                some s1:  (c.loc - s) | s1 = s.left or s1 = s.right
-                all s2: (c.loc - s) | s2 in s.^(left + right)
-                no s3: (c.loc - s) | (s.up = s3 or s.down = s3)
-            }
-            c.ori = Vertical implies {
-                some s1:  (c.loc - s) | s1 = s.up or s1 = s.down
-                all s2: (c.loc - s) | s2 in s.^(up + down)
-                no s3: (c.loc - s) | (s.left = s3 or s.right = s3)
-            }
+pred validLoc[loc: set Square,ori: one Orientation] {
+    all s: loc {
+        ori = Horizontal implies {
+            one s2: (loc - s) | (s.left = s2 or s.right = s2)
         }
-    }
-}
-//carLoc,carLoc',carOri,car
+        ori = Vertical implies {
+             one s2: (loc - s) | (s.up = s2 or s.down = s2)
+        }
 
-pred validMove[startLoc: set Car->Square, endLoc: set Car->Square,car: one Car] {
- 
-   car.ori = Horizontal implies{
-        all s: car.startLoc {
+    }
+
+}
+
+pred validMove[startLoc: set Square, endLoc: set Square, ori: one Orientation] {
+    ori = Horizontal implies{
+        all s: startLoc {
             //Possible transitive closure like operation to do??
-            all bs: (Square - (s.^(left + right))) | bs not in car.endLoc
+            all bs: (Square - (s.^(left + right))) | bs not in endLoc
             //all bs: (Square - (s.^(left + right) s.right + s + s.left.left + s.right.right + s.left.right + s.right.left)) | bs not in endLoc
         }
 
     }
-    car.ori = Vertical implies {
-        all s: car.startLoc {
-            all bs: (Square - (s.^(up + down)))| bs not in car.endLoc
+    ori = Vertical implies {
+        all s: startLoc {
+            all bs: (Square - (s.^(up + down)))| bs not in endLoc
         }
     }
     
-    validLoc[endLoc]
+    validLoc[endLoc,ori]
     
 
-}
-
-pred optimal {
-   one s: State | Square12 in (color.Red).(s.carLoc) and END in (color.Red).(s.carLoc)
-   all s1,s2: State | s1 != s2 implies {s1.carLoc != s2.carLoc}
 }
 
 
 
 trace<|State, initState, puzzle, finalState|> traces: linear {}
 
-run<|traces|> {gameRules optimal} for  10 State
+run<|traces|> gameRules for 3 State
 
 
 
