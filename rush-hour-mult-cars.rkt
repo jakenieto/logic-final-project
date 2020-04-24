@@ -297,18 +297,59 @@ pred optimal {
    all s1,s2: State | s1 != s2 implies {s1.carLoc != s2.carLoc}
 }
 
+pred noDiagonal[s: State] {
+      all c: Car {
+        all sq: s.carLoc.c {
+            c.ori = Horizontal implies {
+                no s1: (s.carLoc.c - sq) | (sq.up = s1 or sq.down = s1)
+            }
+            c.ori = Vertical implies {
+                no s1: (s.carLoc.c - sq) | (sq.right = s1 or sq.left = s1)
+            }
+        }
+    }
+}
+            
 
 
 trace<|State, initState, puzzle, finalState|> traces: linear {}
 
-run<|traces|> {gameRules optimal} for  10 State
+run<|traces|> {gameRules optimal} for  8 State
 
 
+//testing
+/*
+inst discontinuous {
+    State = State0 + State1 + State2 + State3 + State4 + State5 + State6 + State7 
+    Car = Car1 + Car2 + Car3
+    State1.carLoc = Car1->END0 + Car1->Square230 + Car2->Square010 + Car2->Square020 + Car3->Square110 + Car3->Square130
+}
 
+inst horizToVert {
+    State = State0 + State1 + State2 + State3 + State4 + State5 + State6 + State7 
+    Car = Car1 + Car2 + Car3
+    State1.carLoc = Car1->END0 + Car1->Square230 + Car2->Square010 + Car2->Square020 + Car3->Square110 + Car3->Square210
+}
 
+inst vertToHoriz {
+    State = State0 + State1 + State2 + State3 + State4 + State5 + State6 + State7 
+    Car = Car1 + Car2 + Car3
+    State3.carLoc = Car1->220 + Car1->Square230 + Car2->Square010 + Car2->Square020 + Car3->Square110 + Car3->Square120
+}
 
+inst overlap {
+    State = State0 + State1 + State2 + State3 + State4 + State5 + State6 + State7 
+    Car = Car1 + Car2 + Car3
+    State6.carLoc = Car1->END0 + Car1->Square230 + Car2->Square010 + Car2->Square020 + Car3->Square120 + Car3->END0
+}
 
+test expect {
+    discontinuousTest : {gameRules optimal} for discontinuous is unsat
+    horizToVertTest : {gameRules optimal} for horizToVert is unsat
+    vertToHorizTest: {gameRules optimal} for vertToHoriz is unsat
+    overlapTest : {gameRules optimal} for overlap is unsat
 
-
+}
+*/
 
 
