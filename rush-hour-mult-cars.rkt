@@ -297,24 +297,31 @@ pred optimal {
    all s1,s2: State | s1 != s2 implies {s1.carLoc != s2.carLoc}
 }
 
-pred noDiagonal[s: State] {
+pred noDiagonal[loc: set Car->Square] {
       all c: Car {
-        all sq: s.carLoc.c {
+        all sq: c.loc {
             c.ori = Horizontal implies {
-                no s1: (s.carLoc.c - sq) | (sq.up = s1 or sq.down = s1)
+                no s: (Square - (c.loc).^(left + right)) | s in c.loc
             }
             c.ori = Vertical implies {
-                no s1: (s.carLoc.c - sq) | (sq.right = s1 or sq.left = s1)
+                no s: (Square - (c.loc).^(up + down)) | s in c.loc
             }
         }
     }
 }
+
+pred welformedCars {
+    all s: State {
+        noDiagonal[s.carLoc]
+    }
+ 
+}
             
 
 
-trace<|State, initState, puzzle, finalState|> traces: linear {}
+--trace<|State, initState, puzzle, finalState|> traces: linear {}
 
-run<|traces|> {gameRules optimal} for  8 State
+--run<|traces|> {gameRules optimal} for  8 State
 
 
 //testing
@@ -351,5 +358,19 @@ test expect {
 
 }
 */
+trace<|State, initState, puzzle, finalState|> traces: linear {}
+
+/*
+check<|traces|> {(gameRules and optimal) => welformedCars} for  2 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  3 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  4 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  5 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  6 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  7 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  8 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  9 State
+check<|traces|> {(gameRules and optimal) => welformedCars} for  10 State
+*/
+
 
 
