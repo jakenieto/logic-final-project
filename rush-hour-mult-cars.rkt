@@ -9,7 +9,9 @@
   blocking car is considered.
 */
 
+
 //---------SIG DEFINITIONS---------//
+
 
 /*
   This sig models an abstract square on the rush hour board.

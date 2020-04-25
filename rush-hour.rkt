@@ -1,6 +1,17 @@
 #lang forge
 
-//4X4 board
+/**
+  RUSH HOUR (MULTIPLE CARS)
+
+  Implementation of the slide block logic puzzle game Rush Hour, in which you slide
+  the blocking vehicles out of the way for the red car to exit. Instead of solely
+  focusing on only two cars, this file is generalized so that more than one other
+  blocking car is considered.
+*/
+
+
+//---------SIG DEFINITIONS---------//
+
 
 /*
   This sig models an abstract square on the
@@ -13,15 +24,16 @@ abstract sig Square {
     down: lone Square
 }
 
+
+/*
+  Identification of target car and blocking cars.
+*/
 abstract sig Car{}
-one sig Red extends Car{
-   
-}
+one sig Red extends Car{}
 one sig Gray extends Car{}
 
 /*
-  Actual instances of squares. There are
-  16 for a 4X4 board.
+  Actual instances of squares. There are 16 for a 4X4 board.
 */
 one sig Square00 extends Square {}
 one sig Square01 extends Square {}
@@ -41,11 +53,9 @@ one sig Square32 extends Square {}
 one sig Square33 extends Square {}
 
 /*
-  Models the orientation that a car has
-  relative to the board. This direction
-  describes the possible direction of motion
-  that the car can take. The two direction
-  types are "horizontal" and "vertical".
+  Models the orientation that a car has relative to the board. This direction
+  describes the possible direction of motion that the car can take. The two
+  direction types are "horizontal" and "vertical".
 */
 abstract sig Orientation {}
 one sig Vertical extends Orientation {}
@@ -53,7 +63,9 @@ one sig Horizontal extends Orientation {}
 
 
 /*
-  This models a state in the gameplay 
+  This models a state in the gameplay. Each state keep track of the squares
+  that each car is currently in, as well as a variable to store the next car
+  to be moved (ensuring that the cars are moved one at a time).
 */
 sig State {
    redCarOri: one Orientation,
@@ -61,42 +73,41 @@ sig State {
    grayCarLoc: set Square,
    grayCarOri: one Orientation,
    toMove: one Car
-   
-
 }
+
+
+//---------STATE DEFINITIONS---------//
 
 
 /*
-  Initial state of the game. Must set up
-  each squares neighboring squares.
+  Initial state of the game. Must set up each squares neighboring squares,
+  define the sizes that each car can take on, define the red car, the squares
+  that each car exists within (and that they are valid), and one car that is
+  is set to move next.
 */
-
-state[State] initState {
-  
+state[State] initState {  
    redCarOri = Horizontal
    redCarLoc = Square10 + Square11
-
-   
    grayCarLoc = Square12 + Square22 
    grayCarOri = Vertical
-
    one toMove
- 
-   
-
 }
 
+/*
+  Final state of the game. Ensures that a red car must win (reach the end tile)
+  in the final state, defines one car must still move at a time and each car's
+  location must be valid.
+*/
 state[State] finalState {
    redCarOri = Horizontal
    redCarLoc = END + Square12
-
-   
    #(grayCarLoc) = 2
    grayCarOri = Vertical
-
    one toMove
-
 }
+
+
+//------------GAME RULES------------//
 
 
 transition[State] puzzle {
@@ -118,7 +129,8 @@ transition[State] puzzle {
 
 
 /*
-  Can we do separate files and include imports?
+  Defines all of the squares of the board and their left, right, up and down
+  squares.
 */
 pred setupBoard {
     no Square00.left
@@ -204,11 +216,9 @@ pred setupBoard {
 }
 
 /*
-  Pred to setup the initial car's locations.
+  Ensures that for each state, none of the cars overlap -- none of the squares
+  of a car exists in the carLoc squares of another car. 
 */
-
-
-//TODO
 pred noOverlap {
     all s: State {
         all r: s.redCarLoc | r not in s.grayCarLoc
@@ -216,17 +226,31 @@ pred noOverlap {
     }
 }
 
+/*
+  General set of game rules that ensures there is only one red car, and calls
+  two of the other game-defining predicates -- noOverlap and setupBoard.
+*/
 pred gameRules{
     noOverlap
     setupBoard
 }
 
+
+//---------TRANSITION PREDICATES---------//
+
+
+/*
+  Ensures that each car's current position is valid.
+*/
 pred validLoc[loc: set Square,ori: one Orientation] {
     all s: loc {
+        // Two cases based on the car's orientation.
         ori = Horizontal implies {
+            // Ensures that the each horizontal car only move one square to the right/left.
             one s2: (loc - s) | (s.left = s2 or s.right = s2)
         }
         ori = Vertical implies {
+            // Ensures that the each vertical car only move one square to the up/down.
              one s2: (loc - s) | (s.up = s2 or s.down = s2)
         }
 
@@ -234,30 +258,28 @@ pred validLoc[loc: set Square,ori: one Orientation] {
 
 }
 
+/*
+  Ensures that a car's position in the post state is valid.
+*/
 pred validMove[startLoc: set Square, endLoc: set Square, ori: one Orientation] {
-    ori = Horizontal implies{
+    // Two cases based on the car's orientation.
+    ori = Horizontal implies {
         all s: startLoc {
-            //Possible transitive closure like operation to do??
+            // Horizontal cars can only move into left or right squares on the same row.
             all bs: (Square - (s.^(left + right))) | bs not in endLoc
-            //all bs: (Square - (s.^(left + right) s.right + s + s.left.left + s.right.right + s.left.right + s.right.left)) | bs not in endLoc
         }
-
     }
     ori = Vertical implies {
         all s: startLoc {
+            // Vertical cars can only move into up or down squares in the same column.
             all bs: (Square - (s.^(up + down)))| bs not in endLoc
         }
-    }
-    
+    }    
     validLoc[endLoc,ori]
-    
-
 }
 
 
-
 trace<|State, initState, puzzle, finalState|> traces: linear {}
-
 run<|traces|> gameRules for 3 State
 
 
