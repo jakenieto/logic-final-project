@@ -351,16 +351,51 @@ pred noDiagonal[loc: set Car->Square] {
     }
 }
 
+
+/*
+  Checks that a car doesn't have squares that exist diagonally / disconnected from its other ones.
+*/
+pred sameLanes[loc: set Car->Square] {
+      all c: Car {
+        all sq: c.loc {
+            // Two cases based on the car's orientation.
+            c.ori = Horizontal and Square00 in (c.loc).^(right) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square00 or Square01 or Square02 or Square03 in c.loc
+            }
+            c.ori = Vertical and Square00 in (c.loc).^(down) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square00 or Square10 or Square20 or Square30 in c.loc
+            }
+        }
+    }
+}
+
+
+/*
+  Checks that a car doesn't have squares that exist diagonally / disconnected from its other ones.
+*/
+pred sameOrientation[s: State] {
+    all s2: State {
+        s.(toMove.ori) = s2.(toMove.ori)
+    }
+}
+
+
 /*
   General statement to verify that the algorithm is behaving as it should be (no cars become ill formed).
 */
 pred wellFormedCars {
     all s: State {
         noDiagonal[s.carLoc]
+        sameOrientation[s]
     }
 }
             
-/*
+trace<|State, initState, puzzle, finalState|> traces: linear {}
+
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  2 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  3 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  4 State
@@ -370,7 +405,7 @@ check<|traces|> {(gameRules and optimal) => wellFormedCars} for  7 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  8 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  9 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  10 State
-*/
+
 
 --trace<|State, initState, puzzle, finalState|> traces: linear {}
 --run<|traces|> {gameRules optimal} for  8 State
@@ -412,8 +447,6 @@ test expect {
 
 }
 */
-trace<|State, initState, puzzle, finalState|> traces: linear {}
-
 
 
 
