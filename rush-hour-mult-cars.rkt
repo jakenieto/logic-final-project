@@ -364,10 +364,40 @@ pred sameLanes[loc: set Car->Square] {
                 --no s: (Square - (c.loc).^(left + right)) | s in c.loc
                 Square00 or Square01 or Square02 or Square03 in c.loc
             }
+            c.ori = Horizontal and Square10 in (c.loc).^(right) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square10 or Square11 or Square12 or Square13 in c.loc
+            }
+            c.ori = Horizontal and Square20 in (c.loc).^(right) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square20 or Square21 or Square22 or Square23 in c.loc
+            }
+            c.ori = Horizontal and Square30 in (c.loc).^(right) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square30 or Square31 or Square32 or Square33 in c.loc
+            }
             c.ori = Vertical and Square00 in (c.loc).^(down) implies {
                 // Makes sure no squares exist outside of the row of the current horizontal car.
                 --no s: (Square - (c.loc).^(left + right)) | s in c.loc
                 Square00 or Square10 or Square20 or Square30 in c.loc
+            }
+             c.ori = Vertical and Square01 in (c.loc).^(down) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square01 or Square11 or Square21 or Square31 in c.loc
+            }
+             c.ori = Vertical and Square02 in (c.loc).^(down) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square02 or Square12 or Square22 or Square32 in c.loc
+            }
+             c.ori = Vertical and Square03 in (c.loc).^(down) implies {
+                // Makes sure no squares exist outside of the row of the current horizontal car.
+                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
+                Square03 or Square13 or Square23 or Square33 in c.loc
             }
         }
     }
@@ -391,6 +421,7 @@ pred wellFormedCars {
     all s: State {
         noDiagonal[s.carLoc]
         sameOrientation[s]
+  
     }
 }
             
