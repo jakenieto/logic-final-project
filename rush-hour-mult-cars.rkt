@@ -353,63 +353,42 @@ pred noDiagonal[loc: set Car->Square] {
 
 
 /*
-  Checks that a car doesn't have squares that exist diagonally / disconnected from its other ones.
+  Checks that a car stays in the same lane through all states.
 */
 pred sameLanes[loc: set Car->Square] {
       all c: Car {
-        all sq: c.loc {
-            // Two cases based on the car's orientation.
-            c.ori = Horizontal and Square00 in (c.loc).^(right) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square00 or Square01 or Square02 or Square03 in c.loc
-            }
-            c.ori = Horizontal and Square10 in (c.loc).^(right) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square10 or Square11 or Square12 or Square13 in c.loc
-            }
-            c.ori = Horizontal and Square20 in (c.loc).^(right) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square20 or Square21 or Square22 or Square23 in c.loc
-            }
-            c.ori = Horizontal and Square30 in (c.loc).^(right) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square30 or Square31 or Square32 or Square33 in c.loc
-            }
-            c.ori = Vertical and Square00 in (c.loc).^(down) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square00 or Square10 or Square20 or Square30 in c.loc
-            }
-             c.ori = Vertical and Square01 in (c.loc).^(down) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square01 or Square11 or Square21 or Square31 in c.loc
-            }
-             c.ori = Vertical and Square02 in (c.loc).^(down) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square02 or Square12 or Square22 or Square32 in c.loc
-            }
-             c.ori = Vertical and Square03 in (c.loc).^(down) implies {
-                // Makes sure no squares exist outside of the row of the current horizontal car.
-                --no s: (Square - (c.loc).^(left + right)) | s in c.loc
-                Square03 or Square13 or Square23 or Square33 in c.loc
-            }
-        }
-    }
-}
-
-
-/*
-  Checks that a car doesn't have squares that exist diagonally / disconnected from its other ones.
-*/
-pred sameOrientation[s: State] {
-    all s2: State {
-        s.(toMove.ori) = s2.(toMove.ori)
+          // Case where car is in the 1st row
+          c.ori = Horizontal and Square00 in (c.loc).^(right) implies {
+              (Square00 or Square01 or Square02 or Square03) in c.loc
+          }
+          // Case where car is in the 2nd row
+          c.ori = Horizontal and Square10 in (c.loc).^(right) implies {
+              (Square10 or Square11 or Square12 or END) in c.loc
+          }
+          // Case where car is in the 3rd row
+          c.ori = Horizontal and Square20 in (c.loc).^(right) implies {
+              (Square20 or Square21 or Square22 or Square23) in c.loc
+          }
+          // Case where car is in the 4th row
+          c.ori = Horizontal and Square30 in (c.loc).^(right) implies {
+              (Square30 or Square31 or Square32 or Square33) in c.loc
+          }
+          // Case where car is in the 1st col
+          c.ori = Vertical and Square00 in (c.loc).^(down) implies {
+              (Square00 or Square10 or Square20 or Square30) in c.loc
+          }
+          // Case where car is in the 2nd col
+          c.ori = Vertical and Square01 in (c.loc).^(down) implies {
+              (Square01 or Square11 or Square21 or Square31) in c.loc
+          }
+          // Case where car is in the 3rd col
+          c.ori = Vertical and Square02 in (c.loc).^(down) implies {
+              (Square02 or Square12 or Square22 or Square32) in c.loc
+          }
+          // Case where car is in the 4th col
+          c.ori = Vertical and Square03 in (c.loc).^(down) implies {
+              (Square03 or END or Square23 or Square33) in c.loc
+          }
     }
 }
 
@@ -420,11 +399,11 @@ pred sameOrientation[s: State] {
 pred wellFormedCars {
     all s: State {
         noDiagonal[s.carLoc]
-        sameOrientation[s]
-  
+        sameLanes[s.carLoc]
     }
 }
-            
+
+
 trace<|State, initState, puzzle, finalState|> traces: linear {}
 
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  2 State
@@ -438,7 +417,6 @@ check<|traces|> {(gameRules and optimal) => wellFormedCars} for  9 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  10 State
 
 
---trace<|State, initState, puzzle, finalState|> traces: linear {}
 --run<|traces|> {gameRules optimal} for  8 State
 
 
