@@ -405,7 +405,7 @@ pred wellFormedCars {
 
 
 trace<|State, initState, puzzle, finalState|> traces: linear {}
-
+/*
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  2 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  3 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  4 State
@@ -415,7 +415,7 @@ check<|traces|> {(gameRules and optimal) => wellFormedCars} for  7 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  8 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  9 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  10 State
-
+*/
 
 --run<|traces|> {gameRules optimal} for  8 State
 
@@ -457,6 +457,16 @@ test expect {
 }
 */
 
+pred proof {
+    one c: Car {
+         c.ori = Vertical
+         all c1: (Car - c) | c1.ori = Horizontal
+    }
+ all s: State | #(s.carLoc) = 11
+
+}
+
+run<|traces|> {gameRules proof} for 10 State
 
 
 
