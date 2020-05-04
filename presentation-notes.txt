@@ -1,0 +1,28 @@
+1st -   Introduce ourselves 
+
+2nd -   Describe our model with code snippets
+
+3rd -   Explain how our original goal of finding optimal traces 
+        only was interesting if we had nontrivial starting board
+        configurations
+
+4th -   Explain how we tried to investigate how to characterize 
+        nontrivial board configurations and nontrivial traces
+
+5th -   We tried to constrain nontrivial traces by not allowing 
+        for repeated board states, but this led us to realize that, 
+        still, of these constrained traces not all moves were individually 
+        optimal.
+
+6th -   We tried to reason if there was a way to characterize optimal
+        moves (TODO - victor determine properties that we "tried" plus 
+        the instances that show a contradiction). We conjecture that 
+        this is impossible, as it seems that you only can verify 
+        if a move is optimal if you have the optimal solution, making it 
+        appear that this problem of determining "move optimality" is 
+        NP-complete. If such an algorithm did exist which you could in 
+        polynomial-time determine the optimality of a move, then one could
+        construct a greedy algorithm in polynomial-time that determines 
+        optimal traces by making optimal-move choices at each state, instead
+        of exhaustively testing all possible moves. 
+        
