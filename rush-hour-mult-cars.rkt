@@ -95,7 +95,7 @@ state[State] initState {
     hasRedCar[carLoc]
     some carLoc
     validLoc[carLoc]
-    one toMove
+    lone toMove
 }
 
 /*
@@ -105,7 +105,7 @@ state[State] initState {
 */
 state[State] finalState {
     redCarWins[carLoc]
-    one toMove
+    lone toMove
     validLoc[carLoc]
 }
 
@@ -124,7 +124,7 @@ transition[State] puzzle {
              car.carLoc' = car.carLoc
         }
     }
-    one toMove'
+    lone toMove'
 }
 
 /*
@@ -245,8 +245,8 @@ pred gameRules{
 /*
   Defines each car to be at least of length 2.
 */
-pred validCarSizes[carLoc: set Car->Square] {
-    all c: Car | #(c.carLoc) >= 2
+pred validCarSizes[loc: set Car->Square] {
+    all c: Car | #(c.loc) >= 2
 
 }
 
@@ -255,23 +255,23 @@ pred validCarSizes[carLoc: set Car->Square] {
   us to identify it during each transition), has horizontal orientation, is of size 2,
   and does begin on the end squares.
 */
-pred hasRedCar[carLoc: set Car->Squares] {
+pred hasRedCar[loc: set Car->Squares] {
     one c: Car {
         c.color = Red
         c.ori = Horizontal
-        #(c.carLoc) = 2
-        END not in c.carLoc
-        Square12 not in c.carLoc
+        #(c.loc) = 2
+        END not in c.loc
+        Square12 not in c.loc
     }
 }
 
 /*
   Ensures that in the end state the red car exists on the two end squares.
 */
-pred redCarWins[carLoc: set Car->Square] {
+pred redCarWins[loc: set Car->Square] {
     all c: Car {
          c.color = Red implies {
-            c.carLoc = END + Square12
+            c.loc = END + Square12
         }
     }
 }
@@ -404,7 +404,7 @@ pred wellFormedCars {
 }
 
 
-trace<|State, initState, puzzle, finalState|> traces: linear {}
+
 /*
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  2 State
 check<|traces|> {(gameRules and optimal) => wellFormedCars} for  3 State
@@ -457,16 +457,15 @@ test expect {
 }
 */
 
-pred proof {
-    one c: Car {
-         c.ori = Vertical
-         all c1: (Car - c) | c1.ori = Horizontal
-    }
- all s: State | #(s.carLoc) = 11
 
+pred proof {
+ gameRules
+ 
 }
 
-run<|traces|> {gameRules proof} for 10 State
+trace<|State, nonTrivInitState, puzzle, finalState|> traces: linear {}
+
+run<|traces|> {optimal proof} for 37 State, exactly 5 Car
 
 
 
